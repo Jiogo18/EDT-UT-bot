@@ -1,5 +1,8 @@
 # Global
 .env
+edtConfig.ts
+*.db
+*.ics
 
 # IDE
 .vscode

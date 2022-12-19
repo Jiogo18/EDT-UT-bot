@@ -1,6 +1,7 @@
 import { ActivityType, Client, Events, GatewayIntentBits } from "discord.js";
 import { BaseCommand, ReceivedCommand } from "../commands/base";
 import { registerCommands } from "./commands";
+import { EdtManager } from "./edt";
 import { Logger } from "./logger";
 
 export class Bot extends Client {
@@ -8,6 +9,7 @@ export class Bot extends Client {
 	readonly debug: boolean = false;
 	readonly LOGGER: Logger = new Logger(this);
 	readonly PREFIX: string = process.env.COMMAND_PREFIX!;
+	readonly edtManager: EdtManager;
 
 	constructor() {
 		super({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
@@ -42,6 +44,8 @@ export class Bot extends Client {
 			if (!receivedCommand) return;
 			receivedCommand.run();
 		});
+
+		this.edtManager = new EdtManager(this);
 	}
 
 	// nombre à 3 chiffres

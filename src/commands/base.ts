@@ -12,11 +12,11 @@ export abstract class BaseCommand {
 	readonly deferReply: boolean = false; // Send a deferred reply (user only, default false)
 	readonly deferEphemeral: boolean = false; // Send a deferred reply with ephemeral visibility
 
-	constructor(bot: Bot, name: string, description: string, options?: ApplicationCommandOption[], cmdOptions?: { deferReply?: boolean, deferEphemeral?: boolean }) {
+	constructor(bot: Bot, cmdOptions: { name: string, description: string, options?: ApplicationCommandOption[], deferReply?: boolean, deferEphemeral?: boolean }) {
 		this.bot = bot;
-		this.name = name;
-		this.description = description;
-		this.options = options;
+		this.name = cmdOptions.name;
+		this.description = cmdOptions.description;
+		this.options = cmdOptions.options;
 		this.deferReply = cmdOptions?.deferEphemeral ?? false;
 		this.deferEphemeral = cmdOptions?.deferEphemeral ?? false;
 	}
@@ -36,16 +36,21 @@ export class ActionChoiceCommand extends BaseCommand {
 	readonly actions: { name: string, callback: (cmdData: ReceivedCommand) => Promise<void> }[];
 
 	constructor(bot: Bot, name: string, description: string, actions: { name: string, callback: (cmdData: ReceivedCommand) => Promise<void> }[], nextOtions?: ApplicationCommandOption[], cmdOptions?: { deferReply?: boolean, deferEphemeral?: boolean }) {
-		super(bot, name, description, [
-			{
-				name: "action",
-				description: "The action to perform",
-				type: ApplicationCommandOptionType.String,
-				required: true,
-				choices: actions.map(action => ({ name: action.name, value: action.name }))
-			},
-			...nextOtions ?? []
-		], cmdOptions);
+		super(bot, {
+			...cmdOptions,
+			name,
+			description,
+			options: [
+				{
+					name: "action",
+					description: "The action to perform",
+					type: ApplicationCommandOptionType.String,
+					required: true,
+					choices: actions.map(action => ({ name: action.name, value: action.name }))
+				},
+				...nextOtions ?? []
+			],
+		});
 		this.actions = actions;
 	}
 
@@ -110,6 +115,7 @@ export class ReceivedCommand {
 
 	async run(): Promise<void> {
 		try {
+			this.bot.LOGGER.info(`Running command ${this.command.name} from ${this.source instanceof Message ? "message" : "interaction"}.`);
 			await this.command.runCommand(this);
 		}
 		catch (e) {
