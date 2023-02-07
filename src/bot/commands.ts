@@ -3,6 +3,7 @@ import { BotCommand } from "../commands/bot";
 import { BaseCommand } from "../commands/base";
 import { ApplicationCommandDataResolvable, Snowflake } from "discord.js";
 import { SalleCommand } from "../commands/salle";
+import { EdtCommand } from "../commands/edt";
 
 var canPostCommands = true;
 
@@ -39,6 +40,7 @@ export async function registerCommands(bot: Bot): Promise<void> {
 	// Load commands
 	bot.commands.push(new BotCommand(bot));
 	bot.commands.push(new SalleCommand(bot));
+	bot.commands.push(new EdtCommand(bot));
 
 	if (process.env.POST_COMMANDS === "true") {
 		// Register interactions

@@ -40,7 +40,7 @@ export class Event {
 	readonly DESCRIPTION_LINES: string[] = []; // event description lines
 	readonly UID: string = ''; // event id, ADE60506c616...
 	readonly CREATED: Date = new Date(NaN); // event creation
-	readonly 'LAST-MODIFIED': Date = new Date(NaN); // event last modification
+	readonly LAST_MODIFIED: Date = new Date(NaN); // event last modification
 	readonly SEQUENCE: number = 0; // event sequence, -2068...
 	getGroups(): string[] {
 		const withUnderscore = this.DESCRIPTION_LINES.filter(line => line.includes('_'));
@@ -90,7 +90,7 @@ export class Calendar {
 				else {
 					// key:value (but value can contain ':')
 					const index = line.indexOf(':');
-					const key = line.substring(0, index);
+					const key = line.substring(0, index).replace(/-/g, '_');
 					const value = line.substring(index + 1);
 					((currentEvent ?? calendar) as { [key: string]: any })[key] = value;
 					previousKey = key;
@@ -104,7 +104,7 @@ export class Calendar {
 			(event as any).DTSTART = parseDate(event.DTSTART as any);
 			(event as any).DTEND = parseDate(event.DTEND as any);
 			(event as any).CREATED = parseDate(event.CREATED as any);
-			(event as any)['LAST-MODIFIED'] = new Date(event['LAST-MODIFIED']);
+			(event as any).LAST_MODIFIED = parseDate(event.LAST_MODIFIED as any);
 			(event as any).DESCRIPTION = event.DESCRIPTION.replace(/\\n/g, '\n');
 			(event as any).DESCRIPTION_LINES = event.DESCRIPTION.split('\n').filter(line => line.length > 0 && !line.startsWith('(Exported :'));
 		}
@@ -211,7 +211,7 @@ export class EdtManager {
 					if (fileDate.getTime() > oneDayAgo) {
 						const body = await fs.promises.readFile(path, 'utf8');
 						calendar = Calendar.parseCalendar(body);
-						calendar.lastUpdate = new Date();
+						calendar.lastUpdate = fileDate;
 						this.edts[calendarName] = calendar;
 						return calendar;
 					}
@@ -226,10 +226,11 @@ export class EdtManager {
 		calendar = Calendar.parseCalendar(body);
 		calendar.lastUpdate = new Date();
 		this.edts[calendarName] = calendar;
+		this.bot.LOGGER.info(`Downloaded calendar ${calendarName} with ${calendar.Events.length} events`);
 		return calendar;
 	}
 
-	async getSallesCalendar(batiment: string): Promise<Calendar> {
+	async getSallesCalendar(batiment: string, forceDownload?: boolean): Promise<Calendar> {
 		// Download the calendar at edtConfig.salles.portalisDI.url
 		// and return the events of the day
 
@@ -240,7 +241,7 @@ export class EdtManager {
 		const options: http.RequestOptions = edtConfig.getRequestOptions;
 		options.path += '?data=' + encodeURIComponent(batimentData.data);
 
-		return await this.getOrDownloadCalendar(batiment, options);
+		return await this.getOrDownloadCalendar(batiment, options, forceDownload);
 	}
 
 	getTodayRange(now?: Date): { begin: Date, end: Date } {
@@ -250,8 +251,8 @@ export class EdtManager {
 		return { begin, end };
 	}
 
-	async getSallesEventsToday(batiment: string, today?: Date): Promise<Event[]> {
-		const calendar = await this.getSallesCalendar(batiment);
+	async getSallesEventsToday(batiment: string, today?: Date, forceDownload?: boolean): Promise<Event[]> {
+		const calendar = await this.getSallesCalendar(batiment, forceDownload);
 
 		// remove events that are more than one hour in the past and not today
 		const todayRange = this.getTodayRange(today);
