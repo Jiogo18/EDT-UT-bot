@@ -1,6 +1,8 @@
 # Global
 .env
 edtConfig.ts
+edtConfig.js
+data/
 *.db
 *.ics
 
@@ -10,3 +12,6 @@ edtConfig.ts
 # Node
 node_modules/
 package-lock.json
+
+# Source (Non Prod) specific
+build/
