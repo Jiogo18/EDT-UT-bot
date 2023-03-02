@@ -1,0 +1,18 @@
+# Global
+.env
+edtConfig.ts
+edtConfig.js
+data/
+*.db
+*.ics
+
+# IDE
+.vscode
+
+# Node
+node_modules/
+package-lock.json
+
+# Prod specific
+src/
+tsconfig.json
