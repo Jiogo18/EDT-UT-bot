@@ -1,4 +1,5 @@
-import chalk from "chalk";
+import * as chalk from "chalk";
+import { StageChannel, TextChannel } from "discord.js";
 import { Bot } from "./bot";
 
 
@@ -30,12 +31,12 @@ export class Logger {
 		if (!this.bot.isReady()) {
 			// wait 3 seconds
 			await new Promise(resolve => setTimeout(resolve, 3000));
-			if (!this.bot.isReady()) {
+			if (!(this.bot as Bot).isReady()) {
 				console.error(chalk.red("Bot is not ready after 3 seconds, cannot send error message."));
 			}
 		}
 		const channel = await this.bot.channels.fetch(process.env.DISCORD_ERROR_CHANNEL!);
-		if (channel?.isTextBased()) {
+		if (channel?.isTextBased() && !(channel instanceof StageChannel)) {
 			await channel.send(message);
 		}
 	}

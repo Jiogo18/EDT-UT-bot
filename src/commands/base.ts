@@ -1,4 +1,4 @@
-import { APIEmbed, ApplicationCommandDataResolvable, ApplicationCommandOption, ApplicationCommandOptionType, BaseMessageOptions, CommandInteraction, CommandInteractionOption, InteractionResponse, Message, TextChannel } from "discord.js";
+import { APIEmbed, ApplicationCommandDataResolvable, ApplicationCommandOption, ApplicationCommandOptionType, BaseMessageOptions, CommandInteraction, CommandInteractionOption, InteractionResponse, Message, StageChannel, TextBasedChannel } from "discord.js";
 import { Bot } from "../bot/bot";
 
 export type CommandSource = Message | CommandInteraction;
@@ -138,13 +138,18 @@ export class ReceivedCommand {
 				}
 				catch (e) {
 					// Try sending a message in the channel
-					let channel = this.source.channel;
-					if (!channel) {
+					let channel: Exclude<TextBasedChannel, StageChannel>;
+
+					if (this.source.channel?.isTextBased() && !(this.source.channel instanceof StageChannel)) {
+						channel = this.source.channel;
+					}
+					else {
 						const channelFetched = await this.command.bot.channels.fetch(this.source.channelId);
-						if (channelFetched instanceof TextChannel) {
+						if (channelFetched?.isTextBased() && !(channelFetched instanceof StageChannel)) {
 							channel = channelFetched;
 						}
 					}
+
 					if (channel) {
 						return await channel.send(content);
 					}

@@ -1,8 +1,8 @@
 import { edtConfig } from "./edtConfig";
 import { Bot } from "./bot";
-import http from "http";
-import https from "https";
-import fs from "fs";
+import * as http from "http";
+import * as https from "https";
+import * as fs from "fs";
 
 function parseDate(str: string): Date {
 	// Format : 20220918T111157Z
